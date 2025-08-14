@@ -23,11 +23,10 @@ Specifically:
 * **Survival prediction** and **tree construction** both use one of two nonparametric survival estimators:
 
   1. **Full-likelihood NPMLE** [3] — most efficient but computationally heavier (EM-based).
-      **LBRC-CIT-F:** tree using the full-likelihood NPMLE for both construction and prediction.
-      **LBRC-CIF-F:** forest using the full-likelihood NPMLE for both construction and prediction.
-
-     **Composite conditional-likelihood NPMLE** [4] — closed-form and faster, with some loss in efficiency.
-      **LBRC-CIT-C:** tree using the composite conditional-likelihood NPMLE for both construction and prediction.
-      **LBRC-CIF-C:** forest using the composite conditional-likelihood NPMLE for both construction and prediction.
+      * **LBRC-CIT-F:** tree using the full-likelihood NPMLE for both construction and prediction.
+      * **LBRC-CIF-F:** forest using the full-likelihood NPMLE for both construction and prediction.
+  2. **Composite conditional-likelihood NPMLE** [4] — closed-form and faster, with some loss in efficiency.
+      * **LBRC-CIT-C:** tree using the composite conditional-likelihood NPMLE for both construction and prediction.
+      * **LBRC-CIF-C:** forest using the composite conditional-likelihood NPMLE for both construction and prediction.
 
 Full algorithm details and simulation results are provided in our paper: *[link to paper]*.
