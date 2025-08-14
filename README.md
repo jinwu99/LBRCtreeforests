@@ -1,4 +1,3 @@
-```markdown
 # Tree methods for length-biased survival data
 
 We propose tree-based methods for length-biased right-censored (LBRC) data. 
@@ -6,6 +5,7 @@ We propose tree-based methods for length-biased right-censored (LBRC) data.
 Although existing tree methods for left-truncated right-censored (LTRC) data can be applied to LBRC data, they are inefficient because they ignore information from the truncation process.
 
 In brief, the likelihood for LBRC data can be decomposed as:
+```math
 $$
 \underbrace{\mathcal{L}_F}_{\substack{\text{Full-likelihood of}\\ (T,A)}} = \underbrace{\mathcal{L}_C}_{\substack{\text{Conditional-likelihood of}\\ T \text{ given }A}} \times \underbrace{\mathcal{L}_M}_{\substack{\text{Marginal-likelihood of}\\ A}}
 $$
