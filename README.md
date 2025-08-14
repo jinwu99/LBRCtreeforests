@@ -30,3 +30,32 @@ Specifically:
       * **LBRC-CIF-C:** forest using the composite conditional-likelihood NPMLE for both construction and prediction.
 
 Full algorithm details and simulation results are provided in our paper: *[link to paper]*.
+
+## Fitting function
+
+The function for LBRC-CITs and LBRC-CIFs are called `lbrccit` and `lbrccif` respectively, where they can be found in models_lbrc.R from methods folder.
+
+The function works as follows:
+
+```R
+source("./methods/models_lbrc.R")		# functions for LBRC-CIT/CIFs
+source("./methods/plot_lbrc.R")			# functions to plot the tree of LBRC-CITs
+source("./methods/predictProb_lbrc.R")	# functions for prediction of fitted LBRC-CIT/CIFs
+source("./methods/sbrier_lbrc.R")		# functions for calculating brier scores of LBRC-CIT/CIFs
+source("./methods/tune.lbrccif.R")		# functions for tuning mtry parameter of LBRC-CIFs
+
+obj <- lbrccit(formula, data, perm_test_est)
+obj <- lbrccit(formula, data, perm_test_est)
+```
+
+On progress...
+
+## References
+
+[1] Wei Fu and Jeffrey S Simonoff. “Survival trees for left-truncated and right-censored data, with application to time-varying covariate data”. In: Biostatistics 18.2 (2017), pp. 352–369.
+
+[2] Weichi Yao et al. “Ensemble methods for survival function estimation with time-varying covariates”. In: Statistical Methods in Medical Research 31.11 (2022), pp. 2217–2236
+
+[3] Yehuda Vardi. “Multiplicative censoring, renewal processes, deconvolution and decreasing density: nonparametric estimation”. In: Biometrika 76.4 (1989), pp. 751–761.
+
+[4] Yifan He and Yong Zhou. “Nonparametric and semiparametric estimators of restricted mean survival time under length-biased sampling”. In: Lifetime Data Analysis 26.4 (2020), pp. 761–788.
