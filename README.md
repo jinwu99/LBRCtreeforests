@@ -19,6 +19,7 @@ Specifically:
   2. **Composite conditional-likelihood NPMLE** [4] — closed-form and faster, with some loss in efficiency.
       * **LBRC-CIT-C:** tree using the composite conditional-likelihood NPMLE for both construction and prediction.
       * **LBRC-CIF-C:** forest using the composite conditional-likelihood NPMLE for both construction and prediction.
+
 Full algorithm details and simulation results are provided in our paper: *[link to paper]*.
 
 ## Fitting function
