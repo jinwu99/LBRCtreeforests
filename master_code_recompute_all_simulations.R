@@ -58,10 +58,10 @@ source("./simulation/simulations.R")
 simulation_mode <- c("model prediction", "OOB tuning validation", "test unbiasedness")
 
 # Total number of simulations for "model prediction" and "OOB tuning validation"
-M_pred <- 1L
+M_pred <- 500L
 
 # Total number of simulations for "test unbiasedness"
-M_test <- 100L
+M_test <- 10000L
 
 
 # Loop over simulation mode, underlying regression structure, and
@@ -161,3 +161,4 @@ for (mode in c("figure_S2_compare_prediction_accuracy",
 }
 
 sessionInfo()
+
