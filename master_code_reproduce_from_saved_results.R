@@ -3,7 +3,7 @@ rm(list=ls())
 ############################################################
 ## Master script: Reproduce all figures from saved results
 ##
-## This script Uses plot_results.R to regenerate ALL figures
+## This script Uses generate_figs_tabs.R to regenerate ALL figures
 ## in the main manuscript and Supplementary Material that are
 ## based on simulations.
 ##
@@ -82,6 +82,7 @@ for (mode in c("figure_S2_compare_prediction_accuracy",
                "figure_S3_compare_prediction_accuracy")) {
   generate_figures_tables(mode, results_dir)
 }
+
 
 
 
