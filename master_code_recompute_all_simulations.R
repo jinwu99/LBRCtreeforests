@@ -160,5 +160,4 @@ for (mode in c("figure_S2_compare_prediction_accuracy",
   generate_figures_tables(mode, results_dir)
 }
 
-sessionInfo()
 
