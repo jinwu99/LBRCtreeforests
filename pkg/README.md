@@ -106,7 +106,7 @@ plot(obj_cit_mfle, main = "LBRC-CIT-F (MFLE)")
 plot(obj_cit_mcle, main = "LBRC-CIT-C (MCLE)")
 ```
 
-<img src="man/figures/LTRC_CIT_plot.png" width="100%" />
+<img src="pkg/man/figures/LTRC_CIT_plot.png" width="100%" />
 
 <img src="man/figures/LBRC_CIT_F_plot.png" width="100%" />
 
