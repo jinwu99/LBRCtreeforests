@@ -118,24 +118,13 @@ get_risk_set_info <- function(DATA, target_pct) {
   unique_event_times <- sort(unique(DATA$Y[DATA$event == 1]))
   risk_set_df <- tibble(Time = unique_event_times) %>%
     rowwise() %>%
-    mutate(
-      N_Risk = sum(DATA$Y >= Time),
-      # Calculate the percentage
-      Pct_Risk = (N_Risk / N_total) * 100
-    ) %>%
+    mutate(N_Risk = sum(DATA$Y >= Time), Pct_Risk = (N_Risk / N_total) * 100) %>%
     ungroup()
-
-  valid_times <- risk_set_df %>%
-    filter(Pct_Risk >= target_pct)
-  if (nrow(valid_times) > 0) {
-    target_time_point <- max(valid_times$Time)
-  } else {
-    target_time_point <- NA
-  }
-  return(list(
-    risk_set_df = risk_set_df,
-    target_time = target_time_point
-  ))
+  
+  valid_times <- risk_set_df %>% filter(Pct_Risk >= target_pct)
+  target_time_point <- ifelse(nrow(valid_times) > 0, max(valid_times$Time), NA)
+  
+  return(list(risk_set_df = risk_set_df, target_time = target_time_point))
 }
 
 # Real-data prediction analysis using repeated cross-validation.
