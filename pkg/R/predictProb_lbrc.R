@@ -162,7 +162,7 @@ predictProb_LBRC.lbrccif <- function(object, newdata = NULL, newdata.id, OOB = F
   rm(time.tau)
   return(RES)
 }
-
+#' @export
 batched_predictProb_LBRC <- function(object,
                                      newdata,
                                      time.eval,
