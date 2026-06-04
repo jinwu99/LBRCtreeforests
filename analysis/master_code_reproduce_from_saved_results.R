@@ -47,22 +47,22 @@ source("./simulation/generate_figs_tabs.R")
 results_dir <- paste0(current_dir, "/results")
 
 
-# Figure 1: recovery rate comparison across tree models
+# Figure 2: recovery rate comparison across tree models
 mode <- "figure_2_compare_recovery_rate"
 generate_figures_tables(mode, results_dir)
 
 
-# Figure 2: efficiency gain of LBRCtrees over LTRCtree
+# Figure 3: efficiency gain of LBRCtrees over LTRCtree
 mode <- "figure_3_LBRCtrees_vs_LTRCtree_ANOVA"
 generate_figures_tables(mode, results_dir)
 
 
-# Figure 3: validation of OOB tuning for LBRCforests
+# Figure 4: validation of OOB tuning for LBRCforests
 mode <- "figure_4_WI_LBRCforests_OOB_tuning_brier"
 generate_figures_tables(mode, results_dir)
 
 
-# Figure 4: prediction comparison across models
+# Figure 5: prediction comparison across models
 mode <- "figure_5_WI_20_compare_prediction_accuracy"
 generate_figures_tables(mode, results_dir)
 
