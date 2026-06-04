@@ -26,7 +26,7 @@ ANOVA_study <- function(model       = "tree",
                         working_dir = NULL)
 {
   # All results are stored in the results directory
-  result_location <- paste0(working_dir,"/results_intermediate/ANOVA_study/",model,"/",Dist,"/N",n)
+  result_location <- paste0(working_dir,"/results_intermediate/properties_LBRC-CITs/",model,"/",Dist,"/N",n)
 
   if (!dir.exists(result_location)) {
     dir.create(result_location, recursive = TRUE, showWarnings = FALSE)
@@ -263,7 +263,7 @@ predict_L2 <- function(model       = "tree",
                        working_dir = NULL)
 {
   # All results are stored in the results directory
-  result_location <- paste0(working_dir,"/results_intermediate","/",model,"/",Dist,"/N",n)
+  result_location <- paste0(working_dir,"/results_intermediate/properties_LBRC-CIFs/",model,"/",Dist,"/N",n)
 
   if (!dir.exists(result_location)) {
     dir.create(result_location, recursive = TRUE, showWarnings = FALSE)
@@ -676,7 +676,7 @@ validate_OOB_tuning <- function(tune.metric = "brier",
                                 working_dir = NULL)
 {
   # All results are stored in the results directory
-  result_location <- paste0(working_dir,"/results_intermediate","/",model,"/",Dist,"/N",n)
+  result_location <- paste0(working_dir,"/results_intermediate/properties_LBRC-CIFs/",model,"/",Dist,"/N",n)
 
   if (!dir.exists(result_location)) {
     dir.create(result_location, recursive = TRUE, showWarnings = FALSE)
@@ -974,7 +974,7 @@ test_unbiasedness <- function(model       = "tree",
                               working_dir = NULL)
 {
   # All results are stored in the results directory
-  result_location <- paste0(working_dir,"/results_intermediate/test_unbiasedness")
+  result_location <- paste0(working_dir,"/results_intermediate/properties_LBRC-CITs/test_unbiasedness")
 
   if (!dir.exists(result_location)) {
     dir.create(result_location, recursive = TRUE, showWarnings = FALSE)

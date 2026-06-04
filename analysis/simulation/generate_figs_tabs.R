@@ -10,7 +10,7 @@ library(patchwork)
 library(broom)
 library(scales)
 
-##### figure 1: recovery rate comparison across tree models #####
+##### figure 2: recovery rate comparison across tree models #####
 RR_plot <- function(results_dir){
   model <- "tree"
   distributions <- c("WI", "WD", "Lgn", "Bat")
@@ -24,7 +24,7 @@ RR_plot <- function(results_dir){
         scores$LBRCctreeH <- c()
         scores$LBRCctreeF <- c()
 
-        result_location <- paste0(results_dir,"/",model,"/",dist,"/N",N)
+        result_location <- paste0(results_dir,"/properties_LBRC-CITs/",model,"/",dist,"/N",N)
         setwd(result_location)
         fname <- paste0("LBRC_DIST_",dist,
                         "_MODEL_",model,
@@ -215,14 +215,14 @@ RR_plot <- function(results_dir){
   )
 
   setwd(results_dir)
-  ggsave(filename = "figure_1_compare_recovery_rate.pdf",
+  ggsave(filename = "figure_2_compare_recovery_rate.pdf",
          plot = p, width = 12, height = 6, units = "in")
 
-  cat("figure_1_compare_recovery_rate.pdf generated\n")
+  cat("figure_2_compare_recovery_rate.pdf generated\n")
 }
 
 
-##### figure 2: efficiency gain of LBRCtrees over LTRCtree #####
+##### figure 3: efficiency gain of LBRCtrees over LTRCtree #####
 ANOVA_plot <- function(results_dir){
   method_names <- c(
     "LTRCctree",
@@ -264,7 +264,7 @@ ANOVA_plot <- function(results_dir){
       for(dist in distributions) {
         for(N in c(100,200,400)) {
           for(C in c(20,50)) {
-            result_location <- paste0(results_dir,"/ANOVA_study/",model,"/",dist,"/N",N)
+            result_location <- paste0(results_dir,"/properties_LBRC-CITs/",model,"/",dist,"/N",N)
             setwd(result_location)
             fname <- paste0("LBRC_DIST_",dist,
                             "_MODEL_",model,
@@ -309,8 +309,8 @@ ANOVA_plot <- function(results_dir){
     df_long <- df_L2 %>%
       left_join(baseline,
                 by = c("Model","Distribution","N","C","rep")) %>%
-      mutate(diff = ((baseline_L2-L2)/baseline_L2) )
-      # mutate(diff = (baseline_L2-L2) )
+      # mutate(diff = ((baseline_L2-L2)/baseline_L2) )
+      mutate(diff = (baseline_L2-L2) )
 
     df_long <- df_long %>%
       mutate(across(c(Model, Distribution, N, C),
@@ -428,30 +428,30 @@ ANOVA_plot <- function(results_dir){
     plot_layout(heights = c(1, 1, 1, 1))
 
   setwd(results_dir)
-  ggsave(filename = paste0(mode,".pdf"),
+  ggsave(filename = "figure_3_LBRCtrees_vs_LTRCtree_ANOVA.pdf",
          plot = p, width = 12, height = 11, units = "in")
 
-  cat(paste0(mode,".pdf"), "generated\n")
+  cat("figure_3_LBRCtrees_vs_LTRCtree_ANOVA.pdf generated\n")
 }
 
 
-##### figure 3 & S2 ~ S6: validation of OOB tuning for LBRCforests #####
+##### figure 4 & S2 ~ S6: validation of OOB tuning for LBRCforests #####
 OOBtune_plot <- function(mode, tune.metric = "brier", results_dir){
-  if(mode %in% c("figure_3_WI_LBRCforests_OOB_tuning_brier",
-                 "figure_S2_WI_LBRCforests_OOB_tuning_cindex")){
+  if(mode %in% c("figure_4_WI_LBRCforests_OOB_tuning_brier",
+                 "figure_S4_WI_LBRCforests_OOB_tuning_cindex")){
     dists <- c("WI")
     models <- c("tree","linear","nonlinear","interaction")
     width <- 12; height <- 8
     nrow <- 3; ncol <- 4
     facet_dir <- "v"
-  }else if(mode %in% c("figure_S3_WD_LBRCforests_OOB_tuning_brier",
-                       "figure_S4_WD_LBRCforests_OOB_tuning_cindex")){
+  }else if(mode %in% c("figure_S2_WD_LBRCforests_OOB_tuning_brier",
+                       "figure_S5_WD_LBRCforests_OOB_tuning_cindex")){
     dists <- c("WD")
     models <- c("tree","linear","nonlinear","interaction")
     width <- 12; height <- 8
     nrow <- 3; ncol <- 4
     facet_dir <- "v"
-  }else if(mode %in% c("figure_S5_LgnBat_LBRCforests_OOB_tuning_brier",
+  }else if(mode %in% c("figure_S3_LgnBat_LBRCforests_OOB_tuning_brier",
                        "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")){
     dists <- c("Lgn","Bat")
     models <- c("tree")
@@ -478,7 +478,7 @@ OOBtune_plot <- function(mode, tune.metric = "brier", results_dir){
   for(model in models){
     for(dist in dists) {
       for(N in c(100,200,400)){
-        result_location <- paste0(results_dir,"/",model,"/",dist,"/N",N)
+        result_location <- paste0(results_dir,"/properties_LBRC-CIFs/",model,"/",dist,"/N",N)
         setwd(result_location)
 
         fname <- paste0("LBRC_DIST_",dist,
@@ -538,7 +538,7 @@ OOBtune_plot <- function(mode, tune.metric = "brier", results_dir){
       facet_label = paste0(dist, ", ", model, ", n = ", N)
     )
 
-  if(mode %in% c("figure_S5_LgnBat_LBRCforests_OOB_tuning",
+  if(mode %in% c("figure_S3_LgnBat_LBRCforests_OOB_tuning_brier",
                  "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")){
     desired_order <- c(
       "Lgn, Tree, n = 100",
@@ -595,9 +595,9 @@ OOBtune_plot <- function(mode, tune.metric = "brier", results_dir){
 }
 
 
-##### figure 4 & S7 ~ S10: prediction comparison across models #####
+##### figure 5 & S7 ~ S10: prediction comparison across models #####
 L2_plot <- function(mode, results_dir){
-  if(mode == "figure_4_WI_20_compare_prediction_accuracy"){ # WI, C = 20%
+  if(mode == "figure_5_WI_20_compare_prediction_accuracy"){ # WI, C = 20%
     dists <- "WI"
     models <- c("tree","linear","nonlinear","interaction")
     cens_rates <- 20
@@ -648,7 +648,7 @@ L2_plot <- function(mode, results_dir){
     for(dist in dists){
       for(N in c(100,200,400)){
         for(C in cens_rates) {
-          result_location <- paste0(results_dir,"/",model,"/",dist,"/N",N)
+          result_location <- paste0(results_dir,"/properties_LBRC-CIFs/",model,"/",dist,"/N",N)
           setwd(result_location)
           fname <- paste0("LBRC_DIST_",dist,
                           "_MODEL_",model,
@@ -781,7 +781,7 @@ Unbiasedness_table <- function(mode, results_dir){
                      Lgn = "Lognormal")
 
     rows <- list()
-    result_location <- paste0(results_dir,"/test_unbiasedness")
+    result_location <- paste0(results_dir,"/properties_LBRC-CITs/test_unbiasedness")
     setwd(result_location)
 
     for (C in c(20,50)) {
@@ -841,7 +841,7 @@ Unbiasedness_table <- function(mode, results_dir){
             string = sprintf("LBRC_UNBIASED_TEST_DIST_%s_C%1.0f_T%1.2f",
                              "WI",20,trunc_rate)
           }else{
-            result_location <- paste0(results_dir,"/test_unbiasedness")
+            result_location <- paste0(results_dir,"/properties_LBRC-CITs/test_unbiasedness")
             setwd(result_location)
             string = sprintf("LBRC_UNBIASED_TEST_DIST_%s_C%1.0f",
                              "WI",20)
@@ -854,7 +854,7 @@ Unbiasedness_table <- function(mode, results_dir){
             string = sprintf("LBRC_UNBIASED_TEST_DIST_%s_C%1.0f_S%1.2f",
                              "WI",20,trunc_rate)
           }else{
-            result_location <- paste0(results_dir,"/test_unbiasedness")
+            result_location <- paste0(results_dir,"/properties_LBRC-CITs/test_unbiasedness")
             setwd(result_location)
             string = sprintf("LBRC_UNBIASED_TEST_DIST_%s_C%1.0f",
                              "WI",20)
@@ -903,7 +903,6 @@ Unbiasedness_figure <- function(mode, results_dir){
   }
 
   if(mode == "figure_S1_test_unbiasedness_LBRCtrees"){
-    # results_dir <- paste0(results_dir,"/test_unbiasedness")
     dat <- read.csv(file.path(results_dir, "test_unbiasedness_LBRCtrees.csv"),
                     stringsAsFactors = FALSE)
 
@@ -1157,7 +1156,7 @@ Sensitivity_plot <- function(results_dir){
         }
         load(fname)
       } else {
-        result_location <- paste0(results_dir, "/", model, "/", Dist, "/N", N)
+        result_location <- paste0(results_dir, "/properties_LBRC-CIFs/", model, "/", Dist, "/N", N)
         setwd(result_location)
         fname <- sprintf("LBRC_DIST_%s_MODEL_%s_P%1.0f_N%1.0f_C%1.0f", Dist, model, 30, N, C)
         load(fname)
@@ -1307,24 +1306,24 @@ Sensitivity_plot <- function(results_dir){
 
 
 generate_figures_tables <- function(mode, results_dir){
-  if(mode == "figure_1_compare_recovery_rate"){
+  if(mode == "figure_2_compare_recovery_rate"){
     RR_plot(results_dir)
-  }else if(mode == "figure_2_LBRCtrees_vs_LTRCtree_ANOVA"){
+  }else if(mode == "figure_3_LBRCtrees_vs_LTRCtree_ANOVA"){
     ANOVA_plot(results_dir)
-  }else if(mode %in% c("figure_3_WI_LBRCforests_OOB_tuning_brier",
-                       "figure_S2_WI_LBRCforests_OOB_tuning_cindex",
-                       "figure_S3_WD_LBRCforests_OOB_tuning_brier",
-                       "figure_S4_WD_LBRCforests_OOB_tuning_cindex",
-                       "figure_S5_LgnBat_LBRCforests_OOB_tuning_brier",
+  }else if(mode %in% c("figure_4_WI_LBRCforests_OOB_tuning_brier",
+                       "figure_S2_WD_LBRCforests_OOB_tuning_brier",
+                       "figure_S3_LgnBat_LBRCforests_OOB_tuning_brier",
+                       "figure_S4_WI_LBRCforests_OOB_tuning_cindex",
+                       "figure_S5_WD_LBRCforests_OOB_tuning_cindex",
                        "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")){
-    if(mode %in% c("figure_S2_WI_LBRCforests_OOB_tuning_cindex",
-                   "figure_S4_WD_LBRCforests_OOB_tuning_cindex",
+    if(mode %in% c("figure_S4_WI_LBRCforests_OOB_tuning_cindex",
+                   "figure_S5_WD_LBRCforests_OOB_tuning_cindex",
                    "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")){
       OOBtune_plot(mode, tune.metric = "cindex", results_dir)
     }else{
       OOBtune_plot(mode, tune.metric = "brier", results_dir)
     }
-  }else if(mode %in% c("figure_4_WI_20_compare_prediction_accuracy",
+  }else if(mode %in% c("figure_5_WI_20_compare_prediction_accuracy",
                        "figure_S7_WI_50_compare_prediction_accuracy",
                        "figure_S8_WD_20_compare_prediction_accuracy",
                        "figure_S9_WD_50_compare_prediction_accuracy",

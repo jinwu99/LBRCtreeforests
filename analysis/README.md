@@ -1,3 +1,47 @@
+## Repository Structure & Folder Overview
+
+### Root Level Scripts
+Located in the same directory as this README, these two master scripts serve as the primary entry points to run the entire project or instantly reproduce the results.
+* `master_code_reproduce_from_saved_results.R`: Runs the fast reproduction workflow using pre-computed outputs (detailed in the next section).
+* `master_code_recompute_all_simulations.R`: Executes the full or modular recomputation workflow from scratch (detailed in the next section).
+
+### Subdirectories
+
+#### 1. data
+
+Provides data-generation utilities for simulation studies, including length-biased right-censored (LBRC) sampling routines and functions for constructing various underlying survival models.
+
+#### 2. methods
+
+Contains the methodology implementation for LBRC conditional inference trees and forests (LBRC-CIT/CIF), including model fitting, hyperparameter tuning, prediction, performance metrics, and visualization utilities. Most components are adapted and extended from: https://github.com/weichiyao/TimeVaryingData_LTRCforests/tree/main
+
+#### 3. metric
+
+Provides performance evaluation functions for simulation studies, including integrated $L^2$​ prediction error and tree-structure recovery metrics.
+
+#### 4. figures
+
+Stores all figures included in the main manuscript and Supplementary Material, including real-data analysis outputs.
+
+#### 5. results
+Stores all pre-computed simulation results and compiled data summaries used exclusively to instantly regenerate manuscript figures without running new simulations (this fast reproducibility workflow is detailed in the next section). 
+
+The folder structure is organized as follows:
+* `properties_LBRC-CITs/`: Contains pre-computed outputs corresponding to Section 3.1 of the main manuscript and Section B of the Supplementary Material.
+* `properties_LBRC-CIFs/`: Contains pre-computed outputs corresponding to Section 3.2 of the main manuscript and Sections C and D of the Supplementary Material.
+* `sensitivity_analysis/`: Contains pre-computed outputs corresponding to Section E of the Supplementary Material.
+
+Each subfolder contains:
+* Pre-computed outputs organized by the underlying regression structure (`tree/`, `linear/`, `nonlinear/`, `interaction/`), with further subdirectories specified by failure time distributions and sample sizes (e.g., `tree/WI/N200/`).
+* Individual `.RData` files following the standard naming convention: `LBRC_DIST_<DIST>_MODEL_<MODEL>_P<P>_N<N>_C<C>`, which explicitly indicates the failure distribution, model structure, number of covariates, sample size, and censoring rate.
+* `test_unbiasedness/`: Contains pre-computed simulation results dedicated to validating the unbiased variable selection properties of LBRC-CIT estimators.
+
+#### 6. simulation
+Contains the main functions for running the simulation studies and regenerating all manuscript figures/tables. These scripts execute LBRC-CIT/CIF model training across different data-generating scenarios and construct the processed result summaries used for final figure generation.
+* *Note on Intermediate Results:* When executing the full recomputation scripts (detailed below), a `results_intermediate/` directory will be automatically generated to store all newly computed `.RData` files.
+
+
+
 ## Reproducibility of Simulation Studies
 
 We provide two distinct workflows to reproduce the simulation results, depending on your available time constraints and computational resources.
@@ -227,30 +271,3 @@ for(scenario in c("tree_texpt", "tree_covd", "nlin_texpt", "nlin_covd")) {
 generate_figures_tables("figure_S13_sensitivity_analysis_prediction", results_dir)
 ```
 
-
-
-## Folder Overview
-
-### 1. data
-
-Provides data-generation utilities for simulation studies, including length-biased right-censored (LBRC) sampling routines and functions for constructing various underlying survival models.
-
-### 2. methods
-
-Contains the methodology implementation for LBRC conditional inference trees and forests (LBRC-CIT/CIF), including model fitting, hyperparameter tuning, prediction, performance metrics, and visualization utilities. Most components are adapted and extended from: https://github.com/weichiyao/TimeVaryingData_LTRCforests/tree/main
-
-### 3. metric
-
-Provides performance evaluation functions for simulation studies, including integrated $L^2$ prediction error and tree-structure recovery metrics.
-
-### 4. results
-
-Stores all pre-computed simulation results and manuscript figures used for fast reproducibility. This includes:
-
-- Simulation result files organized by data-generating setting (`tree/`, `linear/`, `nonlinear/`,`interaction/`), with subfolders by distribution and sample size (e.g., `tree/WI/N200/`). Each `.RData` file follows the naming convention:  `LBRC_DIST_<DIST>_MODEL_<MODEL>_P<P>_N<N>_C<C>` indicating failure distribution, model structure, number of covariates, sample size, and censoring rate.
-- `test_unbiasedness/` containing simulation results for validating unbiasedness of LBRC-CIT estimators.
-- `figures/` containing all figures and tables included in the main manuscript and Supplementary Material, including real-data analysis outputs.
-
-### 5. simulation
-
-Contains main functions for running the simulation studies and regenerating all manuscript figures/tables. These scripts execute LBRC-CIT/CIF model training across different data-generating scenarios, save results to the `results_intermediate/` directory, and construct the processed result summaries used for figure and table generation.
