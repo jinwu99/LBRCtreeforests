@@ -1,228 +1,273 @@
 rm(list=ls())
 
-############################################################
-## Master script: Recompute all simulation results
+################################################################################
+## Master script: Recompute Simulation Results & Generate Figures
 ##
-## This script reruns ALL simulation studies from scratch
-## and regenerates the intermediate results.
+## This script runs the simulation studies and regenerates the corresponding
+## figures/tables block by block, strictly following the flow of the main
+## manuscript first, followed by the Supplementary Material.
 ##
-## IMPORTANT:
-##  - This script is intended for full recomputation and may
-##    take several days to finish.
-##  - For fast reproduction of figures/tables from saved results,
-##    use: "master_code_reproduce_from_saved_results.R".
-############################################################
+## [REVIEWER INSTRUCTIONS]
+## - Full recomputation with default settings (M_pred=500, M_test=10000) may
+##   take several days.
+## - For a fast reproducibility check, please decrease the 'M_pred' and 'M_test'
+##   parameters in the "USER SETTINGS" section below (e.g., M_pred=10, M_test=100).
+## - You can run each section individually to instantly view its corresponding figure.
+################################################################################
 
-
-## Utility: set working directory to the location of this script ----
+# ==============================================================================
+# 0. Setup & Utility
+# ==============================================================================
 get_current_dir <- function() {
-  # Case 1: running in RStudio
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
     return(dirname(rstudioapi::getActiveDocumentContext()$path))
   }
-
-  # Case 2: running via source() or in R console
   if (!is.null(sys.frame(1)$ofile)) {
     return(dirname(normalizePath(sys.frame(1)$ofile)))
   }
-
-  # Case 3: running as an Rscript
   args <- commandArgs(trailingOnly = FALSE)
   file_arg <- "--file="
   script_path <- sub(file_arg, "", args[grep(file_arg, args)])
   if (length(script_path) > 0) {
     return(dirname(normalizePath(script_path)))
   }
-
-  # Fallback: working directory
   return(getwd())
 }
 
 current_dir <- get_current_dir()
 cat("Script directory:", current_dir, "\n")
 setwd(current_dir)
+
+# Load simulation and plotting functions
 source("./simulation/simulations.R")
+source("./simulation/generate_figs_tabs.R")
 
 
-
-# ------------ Main simulation: CIT / CIF performance studies ------------
-# These settings correspond to Section 3 and Supplements:
-# - Tree structure recovery
-# - Prediction accuracy of LBRC-CIT vs LTRC-CIT (ANOVA-type targeting unbiased survival function)
-# - CIF tuning and prediction comparisons (targeting observable conditional survival function)
-# - Sensitivity analysis to the violation of stationary assumption on truncation process
-
-
-# Simulation modes:
-# - "ANOVA stuudy":           tree
-# - "model prediction":       proposed CIT/CIF prediction accuracy
-# - "OOB tuning validation":  mtry tuning via OOB IBS
-# - "test unbiasedness":      check unbiased variable selection in CIT
-# - "sensitivity analysis":   sensitivity analysis
-simulation_mode <- c("ANOVA study",
-                     "model prediction",
-                     "OOB tuning validation",
-                     "test unbiasedness",
-                     "sensitivity analysis")
-
-# Total number of simulations for "model prediction" and "OOB tuning validation"
-M_pred <- 500
-
-# Total number of simulations for "test unbiasedness"
-M_test <- 10000
+# ==============================================================================
+# 1. USER SETTINGS (Adjustable for fast reproduction)
+# ==============================================================================
+# Original manuscript values: M_pred = 500, M_test = 10000.
+# Change these values to run a smaller subset for quick verification.
+M_pred <- 500   # Number of simulations for prediction & tuning studies
+M_test <- 10000 # Number of simulations for unbiasedness tests
 
 
-# Loop over simulation mode, underlying regression structure, and
-# failure time distribution (see Section 3 and figure captions).
-# - WI:  Weibull with increasing hazard
-# - WD:  Weibull with decreasing hazard
-# - Lgn: Lognormal
-# - Bat: Bathtub-shaped hazard
-for(mode in simulation_mode) {
-  if(mode %in% c("ANOVA study", "model prediction", "OOB tuning validation")){
-    # Simulation design list
-    sim_set_list <- list()
-    # Total number of simulations
-    sim_set_list$M <- M_pred
-    # Number of covariate sets; each set has three types (continuous, ordinal, binary)
-    sim_set_list$cov_set_num <- 10
-    # Sample sizes considered in the paper
-    sim_set_list$ns <- c(100, 200, 400)
+# ==============================================================================
+# PART A: Main Manuscript Simulations & Figures
+# ==============================================================================
 
-    if(mode == "OOB tuning validation"){
-      # Censoring rates (in percentages)
-      sim_set_list$cens_rates <- 20
-      # tuning metric
-      sim_set_list$tune.metric <- "cindex"
-    }else{
-      sim_set_list$cens_rates <- c(20, 50)
+# ------------------------------------------------------------------------------
+# Section 3.1.2: Recovering the correct tree structure (Manuscript Figure 2)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section 3.1.2: Recovering the correct tree structure ---\n")
+sim_set_recovery <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                         cens_rates = c(20, 50), ksi = 500, model = "tree")
+for(Dist in c("WI", "WD", "Lgn", "Bat")) {
+  sim_set_recovery$Dist <- Dist
+  simulate_LBRC_tree_methods("ANOVA study", sim_set_recovery, current_dir)
+}
+# Output: Manuscript Figure 2
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_2_compare_recovery_rate", results_dir)
+
+
+# ------------------------------------------------------------------------------
+# Section 3.1.3: Prediction accuracy against LTRC-CIT (Manuscript Figure 3)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section 3.1.3: Prediction accuracy against LTRC-CIT ---\n")
+sim_set_anova <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                      cens_rates = c(20, 50), ksi = 500)
+for(Dist in c("WI", "WD", "Lgn", "Bat")) {
+  sim_set_anova$Dist <- Dist
+  if(Dist %in% c("WI", "WD")){
+    for(model in c("tree", "linear", "nonlinear", "interaction")) {
+      sim_set_anova$model <- model
+      simulate_LBRC_tree_methods("ANOVA study", sim_set_anova, current_dir)
     }
-
-    # Upper bound for truncation time; set large for length-biased sampling assumption
-    sim_set_list$ksi <- 500
-
-    for(model in c("tree", "linear", "nonlinear", "interaction")){
-      sim_set_list$model <- model
-      if(model == "tree"){
-        for(Dist in c("WI", "WD", "Lgn", "Bat")){
-          sim_set_list$Dist <- Dist
-          simulate_LBRC_tree_methods(mode, sim_set_list, current_dir)
-        }
-      }else{
-        for(Dist in c("WI", "WD")){
-          sim_set_list$Dist <- Dist
-          simulate_LBRC_tree_methods(mode, sim_set_list, current_dir)
-        }
-      }
-    }
-  }else if(mode == "test unbiasedness"){
-    sim_set_list <- list()
-    sim_set_list$M <- M_test
-    sim_set_list$ns <- 200L
-    sim_set_list$cens_rates <- c(20, 50)
-    sim_set_list$ksi <- 500
-
-    for(Dist in c("WI", "WD", "Lgn")){
-      sim_set_list$Dist <- Dist
-      simulate_LBRC_tree_methods(mode, sim_set_list, current_dir)
-    }
-  }else if(mode == "sensitivity analysis"){
-    sim_set_list <- list()
-    sim_set_list$ns <- 200L
-    sim_set_list$cens_rates <- 20
-    sim_set_list$Dist <- "WI"
-
-    for(scenario in c("unbias_texpt", "unbias_covd", "tree_texpt", "tree_covd", "nlin_texpt", "nlin_covd")){
-      sim_set_list$scenario <- scenario
-      if(scenario %in% c("unbias_texpt", "unbias_covd")){
-        sim_set_list$M <- M_test
-        sim_set_list$tau <- qweibull(0.9999,2,3) + 1
-      }else{ # scenario %in% c("tree_texpt", "tree_covd", "nlin_texpt", "nlin_covd")
-        sim_set_list$M <- M_pred
-        sim_set_list$cov_set_num <- 10
-        if(scenario %in% c("tree_texpt", "tree_covd")){
-          sim_set_list$tau <- qweibull(0.9999,2,10) + 1
-          sim_set_list$model <- "tree"
-        }else{ # scenario %in% c("nlin_texpt", "nlin_covd")
-          sim_set_list$tau <- qweibull(0.9999,2,exp(-(-log(10) + 0 + 1/6))) + 1
-          sim_set_list$model <- "nonlinear"
-        }
-      }
-      for(mu in c(0.1, 0.2 ,0.5)){ # mu = rho / tau
-        sim_set_list$rho <- sim_set_list$tau * mu
-        simulate_LBRC_tree_methods(mode, sim_set_list, current_dir)
-      }
-    }
+  }else{ # Dist %in% c("Lgn", "Bat")
+    sim_set_anova$model <- "tree"
+    simulate_LBRC_tree_methods("ANOVA study", sim_set_anova, current_dir)
   }
 }
+# Output: Manuscript Figure 3
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_3_LBRCtrees_vs_LTRCtree_ANOVA", results_dir)
+
+
+# ------------------------------------------------------------------------------
+# Section 3.2.1: Regulating the construction of trees in forests
+#                - WI Setting (Manuscript Figure 4)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section 3.2.1: Regulating the construction of trees in forests (WI Setting) ---\n")
+sim_set_tune_main <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                          cens_rates = 20, ksi = 500, tune.metric = "brier")
+for(model in c("tree", "linear", "nonlinear", "interaction")) {
+  sim_set_tune_main$model <- model
+  sim_set_tune_main$Dist <- "WI"
+  simulate_LBRC_tree_methods("OOB tuning validation", sim_set_tune_main, current_dir)
+}
+# Output: Manuscript Figure 4
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_4_WI_LBRCforests_OOB_tuning_brier", results_dir)
+
+
+# ------------------------------------------------------------------------------
+# Section 3.2.2: Prediction accuracy across methods
+#                - WI Setting, 20% Censoring (Manuscript Figure 5)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section 3.2.2: Prediction accuracy across methods (WI Setting, 20% Censoring) ---\n")
+sim_set_pred_main <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                          cens_rates = 20, ksi = 500)
+for(model in c("tree", "linear", "nonlinear", "interaction")) {
+  sim_set_pred_main$model <- model
+  sim_set_pred_main$Dist <- "WI"
+  simulate_LBRC_tree_methods("model prediction", sim_set_pred_main, current_dir)
+}
+# Output: Manuscript Figure 5
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_5_WI_20_compare_prediction_accuracy", results_dir)
 
 
 
-##########################################################################
-## Plot all the results ----------
+# ==============================================================================
+# PART B: Supplementary Material Simulations & Figures
+# ==============================================================================
 
-current_dir <- get_current_dir()
-cat("Script directory:", current_dir, "\n")
-setwd(current_dir)
-source("./simulation/generate_figs_tabs.R")
-results_dir <- paste0(current_dir, "/results")
-
-
-## Figure 1: recovery rate comparison across tree models
-mode <- "figure_1_compare_recovery_rate"
-generate_figures_tables(mode, results_dir)
-
-
-# Figure 2: efficiency gain of LBRCtrees over LTRCtree
-mode <- "figure_2_LBRCtrees_vs_LTRCtree_ANOVA"
-generate_figures_tables(mode, results_dir)
+# ------------------------------------------------------------------------------
+# Section B: Test of unbiasedness of variable selection (Supp Figure S1)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section B: Test of unbiasedness of variable selection ---\n")
+sim_set_unbias <- list(M = M_test, ns = 200L, cens_rates = c(20, 50), ksi = 500)
+for(Dist in c("WI", "WD", "Lgn")) {
+  sim_set_unbias$Dist <- Dist
+  simulate_LBRC_tree_methods("test unbiasedness", sim_set_unbias, current_dir)
+}
+# Output: Supplementary Figure S1
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_S1_test_unbiasedness_LBRCtrees", results_dir)
 
 
-# Figure 3: validation of OOB tuning for LBRCforests
-mode <- "figure_3_WI_LBRCforests_OOB_tuning_brier"
-generate_figures_tables(mode, results_dir)
+# ------------------------------------------------------------------------------
+# Section C: Additional results on regulating the construction of trees in forests
+#            (Supp Figures S2-S6)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section C.2.1: Results based on IBS ---\n")
+sim_set_tune_supp <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                          cens_rates = 20, ksi = 500, tune.metric = "brier")
+for(model in c("tree", "linear", "nonlinear", "interaction")) {
+  sim_set_tune_supp$model <- model
+  Dists <- if(model == "tree") c("WD", "Lgn", "Bat") else "WD"
+  for(Dist in Dists) {
+    sim_set_tune_supp$Dist <- Dist
+    simulate_LBRC_tree_methods("OOB tuning validation", sim_set_tune_supp, current_dir)
+  }
+}
+# Output: Supplementary Figures S2-S3
+results_dir <- file.path(current_dir, "results_intermediate")
+for (fig in c("figure_S2_WD_LBRCforests_OOB_tuning_brier",
+              "figure_S3_LgnBat_LBRCforests_OOB_tuning_brier")) {
+  generate_figures_tables(fig, results_dir)
+}
 
-
-# Figure 4: prediction comparison across models
-mode <- "figure_4_WI_20_compare_prediction_accuracy"
-generate_figures_tables(mode, results_dir)
-
-
-
-# Supplementary figure S1: test of unbiasedness of variable selection of LBRCtrees
-mode <- "figure_S1_test_unbiasedness_LBRCtrees"
-generate_figures_tables(mode, results_dir)
-
-
-# Supplementary figure S2 ~ S6: Additional OOB tuning results
-for (mode in c("figure_S2_WI_LBRCforests_OOB_tuning_cindex",
-               "figure_S3_WD_LBRCforests_OOB_tuning_brier",
-               "figure_S4_WD_LBRCforests_OOB_tuning_cindex",
-               "figure_S5_LgnBat_LBRCforests_OOB_tuning_brier",
-               "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")) {
-  generate_figures_tables(mode, results_dir)
+cat("\n--- Running Section C.2.2: Results based on C-index ---\n")
+sim_set_tune_supp <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400),
+                          cens_rates = 20, ksi = 500, tune.metric = "cindex")
+for(model in c("tree", "linear", "nonlinear", "interaction")) {
+  sim_set_tune_supp$model <- model
+  Dists <- if(model == "tree") c("WI", "WD", "Lgn", "Bat") else c("WI", "WD")
+  for(Dist in Dists) {
+    sim_set_tune_supp$Dist <- Dist
+    simulate_LBRC_tree_methods("OOB tuning validation", sim_set_tune_supp, current_dir)
+  }
+}
+# Output: Supplementary Figures S4-S6
+results_dir <- file.path(current_dir, "results_intermediate")
+for (fig in c("figure_S4_WI_LBRCforests_OOB_tuning_cindex",
+              "figure_S5_WD_LBRCforests_OOB_tuning_cindex",
+              "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")) {
+  generate_figures_tables(fig, results_dir)
 }
 
 
-# Supplementary figures S7 ~ S10: Additional prediction accuracy plots
-for (mode in c("figure_S7_WI_50_compare_prediction_accuracy",
-               "figure_S8_WD_20_compare_prediction_accuracy",
-               "figure_S9_WD_50_compare_prediction_accuracy",
-               "figure_S10_LgnBat_2050_compare_prediction_accuracy")) {
-  generate_figures_tables(mode, results_dir)
+# ------------------------------------------------------------------------------
+# Section D: Additional results on prediction accuracy across methods
+#            (Supp Figures S7-S10)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section D: Additional prediction accuracy across methods ---\n")
+sim_set_pred_supp <- list(M = M_pred, cov_set_num = 10, ns = c(100, 200, 400), ksi = 500)
+for(dist in c("WI", "WD", "Lgn", "Bat")){
+  if(dist == "WI"){
+    for(model in c("tree", "linear", "nonlinear", "interaction")) {
+      sim_set_pred_supp$model <- model
+      sim_set_pred_supp$Dist <- dist
+      sim_set_pred_supp$cens_rates <- 50
+      simulate_LBRC_tree_methods("model prediction", sim_set_pred_supp, current_dir)
+    }
+  }else if(dist == "WD"){
+    for(model in c("tree", "linear", "nonlinear", "interaction")) {
+      sim_set_pred_supp$model <- model
+      sim_set_pred_supp$Dist <- dist
+      sim_set_pred_supp$cens_rates <- c(20, 50)
+      simulate_LBRC_tree_methods("model prediction", sim_set_pred_supp, current_dir)
+    }
+  }else{ # dist %in% c("Lgn", "Bat")
+    sim_set_pred_supp$model <- "tree"
+    sim_set_pred_supp$Dist <- dist
+    sim_set_pred_supp$cens_rates <- c(20, 50)
+    simulate_LBRC_tree_methods("model prediction", sim_set_pred_supp, current_dir)
+  }
+}
+# Output: Supplementary Figures S7-S10
+results_dir <- file.path(current_dir, "results_intermediate")
+for (fig in c("figure_S7_WI_50_compare_prediction_accuracy",
+              "figure_S8_WD_20_compare_prediction_accuracy",
+              "figure_S9_WD_50_compare_prediction_accuracy",
+              "figure_S10_LgnBat_2050_compare_prediction_accuracy")) {
+  generate_figures_tables(fig, results_dir)
 }
 
 
-# Supplementary figure S11: sensitivity analysis on unbiasedness of variable selection
-mode <- "figure_S11_sensitivity_analysis_unbiasedness"
-generate_figures_tables(mode, results_dir)
+# ------------------------------------------------------------------------------
+# Section E: Sensitivity Analysis (Supp Figures S12-S13)
+# ------------------------------------------------------------------------------
+sim_set_sens <- list(ns = 200L, cens_rates = 20, Dist = "WI")
+cat("\n--- Running Section E.1: Unbiasedness of variable selection ---\n")
+for(scenario in c("unbias_texpt", "unbias_covd")) {
+  sim_set_sens$scenario <- scenario
+  sim_set_sens$M <- M_test
+  sim_set_sens$tau <- qweibull(0.9999, 2, 3) + 1
+  for(mu in c(0.1, 0.2, 0.5)) {
+    sim_set_sens$rho <- sim_set_sens$tau * mu
+    simulate_LBRC_tree_methods("sensitivity analysis", sim_set_sens, current_dir)
+  }
+}
+# Output: Supplementary Figure S12
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_S11_sensitivity_analysis_unbiasedness", results_dir)
+
+cat("\n--- Running Section E.2: Tree recovery and prediction accuracy ---\n")
+for(scenario in c("tree_texpt", "tree_covd", "nlin_texpt", "nlin_covd")) {
+  sim_set_sens$scenario <- scenario
+  sim_set_sens$M <- M_pred
+  sim_set_sens$cov_set_num <- 10
+  if(scenario %in% c("tree_texpt", "tree_covd")) {
+    sim_set_sens$tau <- qweibull(0.9999, 2, 10) + 1
+    sim_set_sens$model <- "tree"
+  } else {
+    sim_set_sens$tau <- qweibull(0.9999, 2, exp(-(-log(10) + 0 + 1/6))) + 1
+    sim_set_sens$model <- "nonlinear"
+  }
+  for(mu in c(0.1, 0.2, 0.5)) {
+    sim_set_sens$rho <- sim_set_sens$tau * mu
+    simulate_LBRC_tree_methods("sensitivity analysis", sim_set_sens, current_dir)
+  }
+}
+# Output: Supplementary Figure S13
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables("figure_S12_sensitivity_analysis_prediction", results_dir)
 
 
-# Supplementary figures S12: sensitivity analysis on tree recovery and prediction
-mode <- "figure_S12_sensitivity_analysis_prediction"
-generate_figures_tables(mode, results_dir)
-
-
-
-
-
+cat("\n====================================================================\n")
+cat("All specified simulations and figure generations are complete.\n")
+cat("Please check the 'results' directory for the output.\n")
+cat("====================================================================\n")

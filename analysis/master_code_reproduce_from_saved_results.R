@@ -12,7 +12,7 @@ rm(list=ls())
 ##    reproduction of the figures without re-running any
 ##    simulations.
 ##  - For full recomputation of simulation results, use:
-##      master_recompute_all_simulations.R
+##      master_code_recompute_all_simulations.R
 ############################################################
 
 ## Utility: set working directory to the location of this script ----
@@ -48,24 +48,23 @@ results_dir <- paste0(current_dir, "/results")
 
 
 # Figure 1: recovery rate comparison across tree models
-mode <- "figure_1_compare_recovery_rate"
+mode <- "figure_2_compare_recovery_rate"
 generate_figures_tables(mode, results_dir)
 
 
 # Figure 2: efficiency gain of LBRCtrees over LTRCtree
-mode <- "figure_2_LBRCtrees_vs_LTRCtree_ANOVA"
+mode <- "figure_3_LBRCtrees_vs_LTRCtree_ANOVA"
 generate_figures_tables(mode, results_dir)
 
 
 # Figure 3: validation of OOB tuning for LBRCforests
-mode <- "figure_3_WI_LBRCforests_OOB_tuning_brier"
+mode <- "figure_4_WI_LBRCforests_OOB_tuning_brier"
 generate_figures_tables(mode, results_dir)
 
 
 # Figure 4: prediction comparison across models
-mode <- "figure_4_WI_20_compare_prediction_accuracy"
+mode <- "figure_5_WI_20_compare_prediction_accuracy"
 generate_figures_tables(mode, results_dir)
-
 
 
 # Supplementary figure S1: test of unbiasedness of variable selection of LBRCtrees
@@ -74,10 +73,10 @@ generate_figures_tables(mode, results_dir)
 
 
 # Supplementary figure S2 ~ S6: Additional OOB tuning results
-for (mode in c("figure_S2_WI_LBRCforests_OOB_tuning_cindex",
-               "figure_S3_WD_LBRCforests_OOB_tuning_brier",
-               "figure_S4_WD_LBRCforests_OOB_tuning_cindex",
-               "figure_S5_LgnBat_LBRCforests_OOB_tuning_brier",
+for (mode in c("figure_S2_WD_LBRCforests_OOB_tuning_brier",
+               "figure_S3_LgnBat_LBRCforests_OOB_tuning_brier",
+               "figure_S4_WI_LBRCforests_OOB_tuning_cindex",
+               "figure_S5_WD_LBRCforests_OOB_tuning_cindex",
                "figure_S6_LgnBat_LBRCforests_OOB_tuning_cindex")) {
   generate_figures_tables(mode, results_dir)
 }
