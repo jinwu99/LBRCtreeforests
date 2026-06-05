@@ -43,7 +43,9 @@ get_current_dir <- function() {
 current_dir <- get_current_dir()
 cat("Script directory:", current_dir, "\n")
 setwd(current_dir)
+source("./simulation/simulations.R")
 source("./simulation/generate_figs_tabs.R")
+source("./simulation/real_data_application.R")
 results_dir <- paste0(current_dir, "/results")
 
 
@@ -64,6 +66,11 @@ generate_figures_tables(mode, results_dir)
 
 # Figure 5: prediction comparison across models
 mode <- "figure_5_WI_20_compare_prediction_accuracy"
+generate_figures_tables(mode, results_dir)
+
+
+# Figure 6~8, Table 1: real data application summary
+mode <- "figure_678_table_1_real_data_application"
 generate_figures_tables(mode, results_dir)
 
 

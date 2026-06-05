@@ -1304,6 +1304,86 @@ Sensitivity_plot <- function(results_dir){
 }
 
 
+##### figure 6~8 & Table 1: Real-data prediction (Brier Score & IBS) #####
+Realdata_application_summary <- function(results_dir) {
+  # Figure 6 & 7
+  real_data_application(mode = "generate_figs_tabs", working_dir = results_dir,
+                        v = NULL, repeats = NULL)
+  
+  # Figure 8 & Table 1
+  synth_data_location <- paste0(results_dir, "/synth_data_application")
+  ibs_path <- file.path(synth_data_location, "synth_data_ibs_results.rds")
+  bs_path  <- file.path(synth_data_location, "synth_data_bs_results.rds")
+  
+  ibs_df_saved <- readRDS(ibs_path)
+  bs_df_saved <- readRDS(bs_path)
+  all_ibs <- split(ibs_df_saved, seq_len(nrow(ibs_df_saved)))
+  all_bs <- split(bs_df_saved, seq_len(nrow(bs_df_saved)))
+  ibs_df <- bind_rows(all_ibs)
+  bs_df  <- bind_rows(all_bs)
+  
+  ibs_summary <- ibs_df %>%
+    group_by(Method) %>%
+    summarise(
+      mean_IBS = mean(IBS, na.rm = TRUE),
+      sd_IBS   = sd(IBS, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    arrange(mean_IBS)
+  
+  bs_summary <- bs_df %>%
+    group_by(Method, Time) %>%
+    summarise(
+      mean_BScore = mean(BScore, na.rm = TRUE),
+      .groups = "drop"
+    )
+  
+  # 2. Factorize Method to keep specific order in plot and legend
+  bs_summary$Method <- factor(
+    bs_summary$Method,
+    levels = c(
+      "LTRC-CIT", "LBRC-CIT-C", "LBRC-CIT-F",
+      "LTRC-CIF", "LBRC-CIF-C", "LBRC-CIF-F",
+      "LTRC-COX", "LBRC-COX"
+    )
+  )
+  
+  # 3. Generate Figure 8 (Brier Score Trajectory)
+  p <- ggplot(bs_summary, aes(x = Time, y = mean_BScore, color = Method, linetype = Method)) +
+    geom_line(linewidth = 0.8) +
+    scale_color_manual(
+      values = c(
+        "LTRC-CIT"   = "#00B358", "LBRC-CIT-C" = "#00B358", "LBRC-CIT-F" = "#00B358",
+        "LTRC-CIF"   = "#A65B00", "LBRC-CIF-C" = "#A65B00", "LBRC-CIF-F" = "#A65B00",
+        "LTRC-COX"   = "#FF9473", "LBRC-COX"   = "#FF9473"
+      )
+    ) +
+    scale_linetype_manual(
+      values = c(
+        "LTRC-CIT"   = "dotted", "LBRC-CIT-C" = "longdash", "LBRC-CIT-F" = "solid",
+        "LTRC-CIF"   = "dotted", "LBRC-CIF-C" = "longdash", "LBRC-CIF-F" = "solid",
+        "LTRC-COX"   = "dotted", "LBRC-COX"   = "solid"
+      )
+    ) +
+    labs(x = "Time", y = "Brier score", color = "Method", linetype = "Method") +
+    theme_bw() +
+    theme(legend.position = "right", panel.grid.minor = element_blank())
+  
+  ggsave(
+    filename = file.path(results_dir, "figure_8_synth_data_Brier_scores.pdf"),
+    plot = p, width = 8, height = 5
+  )
+  cat("figure_8_synth_data_Brier_scores.pdf generated\n")
+  
+  write.csv(
+    ibs_summary, 
+    file.path(results_dir, "table_1_synth_data_cv_ibs_summary.csv"), 
+    row.names = FALSE
+  )
+  cat("table_1_synth_data_cv_ibs_summary.csv generated\n")
+}
+
+
 
 generate_figures_tables <- function(mode, results_dir){
   if(mode == "figure_2_compare_recovery_rate"){
@@ -1335,6 +1415,8 @@ generate_figures_tables <- function(mode, results_dir){
     Unbiasedness_figure(mode, results_dir)
   }else if(mode == "figure_S12_sensitivity_analysis_prediction"){
     Sensitivity_plot(results_dir)
+  }else if(mode == "figure_678_table_1_real_data_application"){
+    Realdata_application_summary(results_dir)
   }else{
     cat("select the mode")
   }

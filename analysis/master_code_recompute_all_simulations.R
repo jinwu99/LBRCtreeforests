@@ -35,12 +35,14 @@ get_current_dir <- function() {
 }
 
 current_dir <- get_current_dir()
+results_dir <- file.path(current_dir, "results")
 cat("Script directory:", current_dir, "\n")
 setwd(current_dir)
 
 # Load simulation and plotting functions
 source("./simulation/simulations.R")
 source("./simulation/generate_figs_tabs.R")
+source("./simulation/real_data_application.R")
 
 
 # ==============================================================================
@@ -71,6 +73,9 @@ results_dir <- file.path(current_dir, "results_intermediate")
 generate_figures_tables("figure_2_compare_recovery_rate", results_dir)
 
 
+
+
+
 # ------------------------------------------------------------------------------
 # Section 3.1.3: Prediction accuracy against LTRC-CIT (Manuscript Figure 3)
 # ------------------------------------------------------------------------------
@@ -94,6 +99,9 @@ results_dir <- file.path(current_dir, "results_intermediate")
 generate_figures_tables("figure_3_LBRCtrees_vs_LTRCtree_ANOVA", results_dir)
 
 
+
+
+
 # ------------------------------------------------------------------------------
 # Section 3.2.1: Regulating the construction of trees in forests
 #                - WI Setting (Manuscript Figure 4)
@@ -109,6 +117,9 @@ for(model in c("tree", "linear", "nonlinear", "interaction")) {
 # Output: Manuscript Figure 4
 results_dir <- file.path(current_dir, "results_intermediate")
 generate_figures_tables("figure_4_WI_LBRCforests_OOB_tuning_brier", results_dir)
+
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -129,6 +140,24 @@ generate_figures_tables("figure_5_WI_20_compare_prediction_accuracy", results_di
 
 
 
+
+
+# ------------------------------------------------------------------------------
+# Section 4: Real Data Application (Manuscript Figure 6~8)
+# ------------------------------------------------------------------------------
+cat("\n--- Running Section 4: Real Data Application ---\n")
+mode <- "cross_validation"
+# Note: For a faster check, you can reduce the number of folds 'v' and 'repeats' (e.g., v = 10, repeats = 1)
+real_data_application(mode, current_dir, v = 10, repeats = 1)
+# Figure 6~8, Table 1: real data application summary
+mode <- "figure_678_table_1_real_data_application"
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables(mode, results_dir)
+
+
+
+
+
 # ==============================================================================
 # PART B: Supplementary Material Simulations & Figures
 # ==============================================================================
@@ -145,6 +174,9 @@ for(Dist in c("WI", "WD", "Lgn")) {
 # Output: Supplementary Figure S1
 results_dir <- file.path(current_dir, "results_intermediate")
 generate_figures_tables("figure_S1_test_unbiasedness_LBRCtrees", results_dir)
+
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -189,6 +221,9 @@ for (fig in c("figure_S4_WI_LBRCforests_OOB_tuning_cindex",
 }
 
 
+
+
+
 # ------------------------------------------------------------------------------
 # Section D: Additional results on prediction accuracy across methods
 #            (Supp Figures S7-S10)
@@ -225,6 +260,9 @@ for (fig in c("figure_S7_WI_50_compare_prediction_accuracy",
               "figure_S10_LgnBat_2050_compare_prediction_accuracy")) {
   generate_figures_tables(fig, results_dir)
 }
+
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -271,3 +309,5 @@ cat("\n====================================================================\n")
 cat("All specified simulations and figure generations are complete.\n")
 cat("Please check the 'results' directory for the output.\n")
 cat("====================================================================\n")
+
+

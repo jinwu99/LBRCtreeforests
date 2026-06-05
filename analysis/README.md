@@ -24,20 +24,21 @@ Provides performance evaluation functions for simulation studies, including inte
 Stores all figures included in the main manuscript and Supplementary Material, including real-data analysis outputs.
 
 #### 5. results
-Stores all pre-computed simulation results and compiled data summaries used exclusively to instantly regenerate manuscript figures without running new simulations (this fast reproducibility workflow is detailed in the next section). 
+Stores all pre-computed simulation results and compiled data summaries to regenerate manuscript figures without running new simulations (this fast reproducibility workflow is detailed in the next section). 
 
 The folder structure is organized as follows:
 * `properties_LBRC-CITs/`: Contains pre-computed outputs corresponding to Section 3.1 of the main manuscript and Section B of the Supplementary Material.
 * `properties_LBRC-CIFs/`: Contains pre-computed outputs corresponding to Section 3.2 of the main manuscript and Sections C and D of the Supplementary Material.
 * `sensitivity_analysis/`: Contains pre-computed outputs corresponding to Section E of the Supplementary Material.
+* `synth_data_application/`: Contains pre-computed cross-validation outputs (Brier score trajectories and integrated Brier scores) corresponding to the real-data application in Section 4 of the main manuscript. Due to privacy restrictions on the original clinical dataset, these results are derived from a proxy synthetic dataset to enable the regeneration of Figures 6–8 and Table 1.
 
 Each subfolder contains:
-* Pre-computed outputs organized by the underlying regression structure (`tree/`, `linear/`, `nonlinear/`, `interaction/`), with further subdirectories specified by failure time distributions and sample sizes (e.g., `tree/WI/N200/`).
-* Individual `.RData` files following the standard naming convention: `LBRC_DIST_<DIST>_MODEL_<MODEL>_P<P>_N<N>_C<C>`, which explicitly indicates the failure distribution, model structure, number of covariates, sample size, and censoring rate.
-* `test_unbiasedness/`: Contains pre-computed simulation results dedicated to validating the unbiased variable selection properties of LBRC-CIT estimators.
+* Pre-computed outputs organized by the underlying model structure (`tree/`, `linear/`, `nonlinear/`, `interaction/`), with further subdirectories specified by failure time distributions and sample sizes (e.g., `tree/WI/N200/`).
+* Individual `.RData` files following the standard naming convention: `LBRC_DIST_<DIST>_MODEL_<MODEL>_P<P>_N<N>_C<C>`, which indicates the failure distribution, model structure, number of covariates, sample size, and censoring rate.
+* `test_unbiasedness/`: Contains pre-computed simulation results for validating the unbiased variable selection properties of LBRC-CIT estimators.
 
 #### 6. simulation
-Contains the main functions for running the simulation studies and regenerating all manuscript figures/tables. These scripts execute LBRC-CIT/CIF model training across different data-generating scenarios and construct the processed result summaries used for final figure generation.
+Contains the main execution functions and plotting code for running the simulation studies and the real-data application workflow. The functions inside this folder are managed and called by the two master scripts at the root level.
 * *Note on Intermediate Results:* When executing the full recomputation scripts (detailed below), a `results_intermediate/` directory will be automatically generated to store all newly computed `.RData` files.
 
 
@@ -86,6 +87,7 @@ setwd(current_dir)
 # Load simulation and plotting functions
 source("./simulation/simulations.R")
 source("./simulation/generate_figs_tabs.R")
+source("./simulation/real_data_application.R")
 
 # 1. USER SETTINGS (Adjustable for fast reproduction)
 M_pred <- 30    # Reduced from 500
@@ -156,6 +158,22 @@ for(model in c("tree", "linear", "nonlinear", "interaction")) {
   simulate_LBRC_tree_methods("model prediction", sim_set_pred_main, current_dir)
 }
 generate_figures_tables("figure_5_WI_20_compare_prediction_accuracy", results_dir)
+```
+
+**Section 4: Real Data Application (Manuscript Figures 6-8)**
+
+> ⚠️ **Note on Data Privacy & Synthetic Data:** > Due to institutional privacy regulations at the National Cancer Center data center, the raw lung cancer patient dataset cannot be publicly shared or exported. To ensure full reproducibility, the code block below executes the exact same real-data analysis workflow (stationarity testing, tree construction, and repeated cross-validation for Brier scores) using a **simulated synthetic LBRC dataset**. 
+>
+
+```R
+cat("\n--- Running Section 4: Real Data Application ---\n")
+mode <- "cross_validation"
+# Note: For a faster check, you can reduce the number of folds 'v' and 'repeats' (e.g., v = 10, repeats = 1)
+real_data_application(mode, current_dir, v = 10, repeats = 1)
+# Figure 6~8, Table 1: real data application summary
+mode <- "figure_678_table_1_real_data_application"
+results_dir <- file.path(current_dir, "results_intermediate")
+generate_figures_tables(mode, results_dir)
 ```
 
 #### 3. Execute by Section: Supplementary Material
