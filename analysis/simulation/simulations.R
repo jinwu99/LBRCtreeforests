@@ -287,6 +287,11 @@ predict_L2 <- function(model       = "tree",
   if(file_missing){
     RES <- list()
 
+    # Tree recovery rate (RR)
+    RES$RR$LTRCctree   <- rep(NA,M)
+    RES$RR$LBRCctreeC  <- rep(NA,M)
+    RES$RR$LBRCctreeF  <- rep(NA,M)
+    
     # Integrated L2 error
     RES$L2$KM_LT       <- rep(NA,M)
     RES$L2$MCLE        <- rep(NA,M)
@@ -486,10 +491,11 @@ predict_L2 <- function(model       = "tree",
                      perm_test_est = 'KM')
       # Yields identical results to the code below
       # obj <- LTRCtrees::LTRCIT(Formula = formula, data = DATA)
-      pred <- predictProb_LBRC(object = obj, newdata = TEST, time.eval = time.uniq,
-                               pred_surv_est = 'KM',
-                               target = "observed")
+        pred <- predictProb_LBRC(object = obj, newdata = TEST, time.eval = time.uniq,
+                                 pred_surv_est = 'KM',
+                                 target = "observed")
       })[3]
+      if(model == "tree") RES$RR$LTRCctree[mm] <- recoverTree(obj)
       RES$L2$LTRCctree[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
       cat(mm, " th ", "LTRC-CIT       ", "L2 : ", round(RES$L2$LTRCctree[mm],5)*10^5, '\n', sep="")
       rm(obj, pred)
@@ -504,6 +510,7 @@ predict_L2 <- function(model       = "tree",
                                  pred_surv_est = 'MCLE',
                                  target = "observed")
       })[3]
+      if(model == "tree") RES$RR$LBRCctreeC[mm] <- recoverTree(obj)
       RES$L2$LBRCctreeCC[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
       cat(mm, " th ", "LBRC-CIT-(C,C) ", "L2 : ", round(RES$L2$LBRCctreeCC[mm],5)*10^5, '\n', sep="")
       rm(obj, pred)
@@ -518,6 +525,7 @@ predict_L2 <- function(model       = "tree",
                                  pred_surv_est = 'MFLE', pred_surv_args = vardi_tune,
                                  target = "observed")
       })[3]
+      if(model == "tree") RES$RR$LBRCctreeF[mm] <- recoverTree(obj)
       RES$L2$LBRCctreeFF[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
       cat(mm, " th ", "LBRC-CIT-(F,F) ", "L2 : ", round(RES$L2$LBRCctreeFF[mm],5)*10^5, '\n', sep="")
       rm(obj, pred)
@@ -698,14 +706,70 @@ validate_OOB_tuning <- function(tune.metric = "brier",
   })
 
   if(file_missing){
-    cat("There is no stored file: run other simulation first!")
-    break
+    RES <- list()
+    
+    # Integrated L2 error
+    RES$L2$KM_LT       <- rep(NA,M)
+    RES$L2$MCLE        <- rep(NA,M)
+    RES$L2$MFLE        <- rep(NA,M)
+    RES$L2$LTRCctree   <- rep(NA,M)
+    RES$L2$LBRCctreeCC <- rep(NA,M)
+    RES$L2$LBRCctreeFF <- rep(NA,M)
+    RES$L2$LBRCctreeCF <- rep(NA,M)
+    RES$L2$LBRCctreeFC <- rep(NA,M)
+    
+    mtry_candidates <- c(1,2,3,6,12,24,30)
+    for(m in mtry_candidates){
+      tmp_str <- paste0("mtry",m)
+      RES[["L2"]][["LTRCcforest"]][[tmp_str]]   <- rep(NA,M)
+      RES[["L2"]][["LBRCcforestCC"]][[tmp_str]] <- rep(NA,M)
+      RES[["L2"]][["LBRCcforestFF"]][[tmp_str]] <- rep(NA,M)
+    }
+    # Optimal L2 tuned with Brier score
+    RES[["L2"]][["LTRCcforest"]][["mtryOPT"]]   <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestCC"]][["mtryOPT"]] <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestFF"]][["mtryOPT"]] <- rep(NA,M)
+    # Optimal L2 tuned with c-index
+    RES[["L2"]][["LTRCcforest"]][["mtryOPT2"]]   <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestCC"]][["mtryOPT2"]] <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestFF"]][["mtryOPT2"]] <- rep(NA,M)
+    # Minimum L2 among mtry candidates
+    RES[["L2"]][["LTRCcforest"]][["mtryMIN"]]   <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestCC"]][["mtryMIN"]] <- rep(NA,M)
+    RES[["L2"]][["LBRCcforestFF"]][["mtryMIN"]] <- rep(NA,M)
+    RES$L2$LTRCcox     <- rep(NA,M)
+    RES$L2$LBRCcox     <- rep(NA,M)
+    
+    # Tuned mtry (tune.metric = brier)
+    RES$opt_mtry$LTRCcforest   <- rep(NA,M)
+    RES$opt_mtry$LBRCcforestCC <- rep(NA,M)
+    RES$opt_mtry$LBRCcforestFF <- rep(NA,M)
+    # Tuned mtry2 (tune.metric = c-index)
+    RES$opt_mtry2$LTRCcforest   <- rep(NA,M)
+    RES$opt_mtry2$LBRCcforestCC <- rep(NA,M)
+    RES$opt_mtry2$LBRCcforestFF <- rep(NA,M)
+    
+    # mtry that yields minimum L2 difference
+    RES$min_mtry$LTRCcforest   <- rep(NA,M)
+    RES$min_mtry$LBRCcforestCC <- rep(NA,M)
+    RES$min_mtry$LBRCcforestFF <- rep(NA,M)
+    
+    # Running time (RN_TM) of trees and forests
+    RES$RN_TM$LTRCctree     <- rep(NA,M)
+    RES$RN_TM$LBRCctreeCC   <- rep(NA,M)
+    RES$RN_TM$LBRCctreeFF   <- rep(NA,M)
+    RES$RN_TM$LTRCcforest   <- rep(NA,M)
+    RES$RN_TM$LBRCcforestCC <- rep(NA,M)
+    RES$RN_TM$LBRCcforestFF <- rep(NA,M)
+    
+    # Mean censoring rate for current simulation setting
+    RES$mean_cens_rate <- c()
   }
 
   if (tune.metric == "brier") {
-    M_init <- sum(!is.na(RES$L2$LBRCcforestFF$mtryMIN))
+    M_init <- min(sum(!is.na(RES$L2$LBRCcforestFF$mtryMIN)), sum(!is.na(RES$L2$LBRCcforestFF$mtryOPT)))
   } else if (tune.metric == "cindex") {
-    M_init <- sum(!is.na(RES$L2$LBRCcforestFF$mtryOPT2))
+    M_init <- min(sum(!is.na(RES$L2$LBRCcforestFF$mtryMIN)), sum(!is.na(RES$L2$LBRCcforestFF$mtryOPT2)))
   }
 
   print_mtry_monitor <- function(method_name, RES, mm) {
@@ -889,6 +953,69 @@ validate_OOB_tuning <- function(tune.metric = "brier",
 
 
 
+    ### validation of tuning with metric = integrated brier score
+    if(tune.metric == "brier"){
+      if(is.na(RES$L2$LTRCcforest$mtryOPT[mm])){
+        ##################--------- LTRC-CIF tuned --------##################
+        obj <- lbrccif(formula = formula, data = DATA,
+                       tune.metric = tune.metric,
+                       mtry=NULL,
+                       perm_test_est = "KM",
+                       pred_surv_est = "KM",
+                       ntree = ntree, control = control, trace = F)
+        pred <- batched_predictProb_LBRC(object = obj,
+                                         newdata = TEST,
+                                         time.eval = time.uniq,
+                                         pred_surv_est = 'KM',
+                                         batch_size = 50)
+        RES$opt_mtry$LTRCcforest[mm] <- obj$mtry
+        RES$L2$LTRCcforest$mtryOPT[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
+        cat(mm, " th ", "LTRC-CIF       ", "L2 (tuned with IBS) : ", round(RES$L2$LTRCcforest$mtryOPT[mm],5)*10^5, '\n', sep="")
+        rm(obj, pred)
+        gc()
+      }
+      if(is.na(RES$L2$LBRCcforestCC$mtryOPT[mm])){
+        ##################--------- LBRC-CIF-C tuned --------##################
+        obj <- lbrccif(formula = formula, data = DATA,
+                       tune.metric = tune.metric,
+                       mtry=NULL,
+                       perm_test_est = "MCLE",
+                       pred_surv_est = "MCLE",
+                       ntree = ntree, control = control, trace = F)
+        pred <- batched_predictProb_LBRC(object = obj,
+                                         newdata = TEST,
+                                         time.eval = time.uniq,
+                                         pred_surv_est = 'MCLE',
+                                         batch_size = 50)
+        RES$opt_mtry$LBRCcforestCC[mm] <- obj$mtry
+        RES$L2$LBRCcforestCC$mtryOPT[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
+        cat(mm," th ", "LBRC-CIF-C     ", "L2 (tuned with IBS) : ", round(RES$L2$LBRCcforestCC$mtryOPT[mm],5)*10^5, '\n', sep="")
+        rm(obj, pred)
+        gc()
+      }
+      if(is.na(RES$L2$LBRCcforestFF$mtryOPT[mm])){
+        ##################--------- LBRC-CIF-F tuned --------##################
+        obj <- lbrccif(formula = formula, data = DATA,
+                       tune.metric = tune.metric,
+                       mtry=NULL,
+                       perm_test_est = "MFLE", perm_test_args = vardi_tune,
+                       pred_surv_est = "MFLE", pred_surv_args = vardi_tune,
+                       ntree = ntree, control = control, trace = F)
+        pred <- batched_predictProb_LBRC(object = obj,
+                                         newdata = TEST,
+                                         time.eval = time.uniq,
+                                         pred_surv_est = 'MFLE',
+                                         batch_size = 50)
+        RES$opt_mtry$LBRCcforestFF[mm] <- obj$mtry
+        RES$L2$LBRCcforestFF$mtryOPT[mm] <- Loss.func(pred$survival.probs, TEST.true, time.uniq, TEST$Y)
+        cat(mm," th ", "LBRC-CIF-F     ", "L2 (tuned with IBS) : ", round(RES$L2$LBRCcforestFF$mtryOPT[mm],5)*10^5, '\n', sep="")
+        rm(obj, pred)
+        gc()
+      }
+    }
+    
+    
+    
     ### validation of tuning with metric = c-index
     if(tune.metric == "cindex"){
       if(is.na(RES$L2$LTRCcforest$mtryOPT2[mm])){

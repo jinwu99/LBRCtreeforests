@@ -965,6 +965,8 @@ Unbiasedness_figure <- function(mode, results_dir){
         Method = factor(Method, levels = c("C", "F")),
         Variable = factor(Variable, levels = paste0("X", 1:6))
       )
+    
+    Total <- dat_long$Total[1]
 
     pdat <- dat_long %>%
       distinct(Setting, Method, Total, pval) %>%
@@ -988,8 +990,10 @@ Unbiasedness_figure <- function(mode, results_dir){
       ) +
       facet_wrap(~ Setting, nrow = 2, ncol = 3) +
       scale_y_continuous(
-        limits = c(0, 10800),
-        breaks = seq(0, 10000, by = 2500),
+        # limits = c(0, 10800),
+        # breaks = seq(0, 10000, by = 2500),
+        limits = c(0, Total * 1.08),
+        breaks = seq(0, Total, by = round(Total / 4, 0)),
         expand = expansion(mult = c(0, 0.05))
       ) +
       labs(
@@ -1063,6 +1067,8 @@ Unbiasedness_figure <- function(mode, results_dir){
         Variable = factor(Variable, levels = paste0("X", 1:6))
       )
 
+    Total <- dat_long$Total[1]
+    
     pdat <- dat_long %>%
       distinct(Scenario, mu_label, Method, Total, pval) %>%
       mutate(
@@ -1085,8 +1091,10 @@ Unbiasedness_figure <- function(mode, results_dir){
       ) +
       facet_grid(Scenario ~ mu_label) +
       scale_y_continuous(
-        limits = c(0, 10800),
-        breaks = seq(0, 10000, by = 2500),
+        # limits = c(0, 10800),
+        # breaks = seq(0, 10000, by = 2500),
+        limits = c(0, Total * 1.08),
+        breaks = seq(0, Total, by = round(Total / 4, 0)),
         expand = expansion(mult = c(0, 0.05))
       ) +
       labs(
@@ -1142,7 +1150,6 @@ Sensitivity_plot <- function(results_dir){
 
     for (rho in rho_grid) {
       trunc_rate <- round(rho/tau, 2)
-      # print(paste("Scenario:", scenario, "- N:", N, "- trunc_rate:", trunc_rate))
 
       # Load intermediate results
       if (trunc_rate > 0) {
@@ -1155,7 +1162,7 @@ Sensitivity_plot <- function(results_dir){
           fname <- sprintf("LBRC_DIST_%s_MODEL_%s_P%1.0f_N%1.0f_C%1.0f_S%1.2f", Dist, model, 30, N, C, trunc_rate)
         }
         load(fname)
-      } else {
+      } else { # trunc_rate == 0
         result_location <- paste0(results_dir, "/properties_LBRC-CIFs/", model, "/", Dist, "/N", N)
         setwd(result_location)
         fname <- sprintf("LBRC_DIST_%s_MODEL_%s_P%1.0f_N%1.0f_C%1.0f", Dist, model, 30, N, C)
@@ -1175,24 +1182,22 @@ Sensitivity_plot <- function(results_dir){
         )
       }
 
-      # ---------- L2 summary (only up to trunc_rate = 1, for all scenarios) ----------
-      if (trunc_rate <= 1) {
-        l2_ltrc_tree   <- RES$L2$LTRCctree
-        l2_c_tree      <- RES$L2$LBRCctreeCC
-        l2_f_tree      <- RES$L2$LBRCctreeFF
-        l2_ltrc_forest <- RES$L2$LTRCcforest$mtryOPT
-        l2_c_forest    <- RES$L2$LBRCcforestCC$mtryOPT
-        l2_f_forest    <- RES$L2$LBRCcforestFF$mtryOPT
-
-        out_l2[[length(out_l2) + 1]] <- bind_rows(
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LTRC",   algorithm = "Tree (CIT)",   L2 = l2_ltrc_tree),
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-C", algorithm = "Tree (CIT)",   L2 = l2_c_tree),
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-F", algorithm = "Tree (CIT)",   L2 = l2_f_tree),
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LTRC",   algorithm = "Forest (CIF)", L2 = l2_ltrc_forest),
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-C", algorithm = "Forest (CIF)", L2 = l2_c_forest),
-          data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-F", algorithm = "Forest (CIF)", L2 = l2_f_forest)
-        )
-      }
+      # ---------- L2 summary ----------
+      l2_ltrc_tree   <- RES$L2$LTRCctree
+      l2_c_tree      <- RES$L2$LBRCctreeCC
+      l2_f_tree      <- RES$L2$LBRCctreeFF
+      l2_ltrc_forest <- RES$L2$LTRCcforest$mtryOPT
+      l2_c_forest    <- RES$L2$LBRCcforestCC$mtryOPT
+      l2_f_forest    <- RES$L2$LBRCcforestFF$mtryOPT
+      
+      out_l2[[length(out_l2) + 1]] <- bind_rows(
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LTRC",   algorithm = "Tree (CIT)",   L2 = l2_ltrc_tree),
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-C", algorithm = "Tree (CIT)",   L2 = l2_c_tree),
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-F", algorithm = "Tree (CIT)",   L2 = l2_f_tree),
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LTRC",   algorithm = "Forest (CIF)", L2 = l2_ltrc_forest),
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-C", algorithm = "Forest (CIF)", L2 = l2_c_forest),
+        data.frame(Scenario = scenario, N = N, rho = rho, mu = trunc_rate, method = "LBRC-F", algorithm = "Forest (CIF)", L2 = l2_f_forest)
+      )
     }
   }
 

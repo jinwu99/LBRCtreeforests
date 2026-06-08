@@ -169,7 +169,7 @@ cross_validation_prediction <- function(DATA,
     TEST  <- rsample::assessment(split)
 
     TEST$id <- seq_len(nrow(TEST))
-    time.uniq <- sort(unique(c(0, TEST$Y)))
+    time.uniq <- sort(unique(c(0, plot_grid)))
 
     control <- partykit::ctree_control(
       teststat  = "quad",
@@ -280,108 +280,6 @@ cross_validation_prediction <- function(DATA,
     }
   }
 
-  # ibs_df <- bind_rows(all_ibs)
-  # bs_df  <- bind_rows(all_bs)
-  # 
-  # ibs_summary <- ibs_df %>%
-  #   group_by(Method) %>%
-  #   summarise(
-  #     mean_IBS = mean(IBS, na.rm = TRUE),
-  #     sd_IBS   = sd(IBS, na.rm = TRUE),
-  #     se_IBS   = sd_IBS / sqrt(sum(!is.na(IBS))),
-  #     .groups = "drop"
-  #   ) %>%
-  #   arrange(mean_IBS)
-  # 
-  # bs_summary <- bs_df %>%
-  #   group_by(Method, Time) %>%
-  #   summarise(
-  #     mean_BScore = mean(BScore, na.rm = TRUE),
-  #     .groups = "drop"
-  #   )
-  # 
-  # bs_summary$Method <- factor(
-  #   bs_summary$Method,
-  #   levels = c(
-  #     "LTRC-CIT",
-  #     "LBRC-CIT-C",
-  #     "LBRC-CIT-F",
-  #     "LTRC-CIF",
-  #     "LBRC-CIF-C",
-  #     "LBRC-CIF-F",
-  #     "LTRC-COX",
-  #     "LBRC-COX"
-  #   )
-  # )
-  # 
-  # p <- ggplot(
-  #   bs_summary,
-  #   aes(
-  #     x = Time,
-  #     y = mean_BScore,
-  #     color = Method,
-  #     linetype = Method
-  #   )
-  # ) +
-  #   geom_line(linewidth = 0.8) +
-  # 
-  #   scale_color_manual(
-  #     values = c(
-  #       "LTRC-CIT"   = "#00B358",
-  #       "LBRC-CIT-C" = "#00B358",
-  #       "LBRC-CIT-F" = "#00B358",
-  # 
-  #       "LTRC-CIF"   = "#A65B00",
-  #       "LBRC-CIF-C" = "#A65B00",
-  #       "LBRC-CIF-F" = "#A65B00",
-  # 
-  #       "LTRC-COX"   = "#FF9473",
-  #       "LBRC-COX"   = "#FF9473"
-  #     )
-  #   ) +
-  # 
-  #   scale_linetype_manual(
-  #     values = c(
-  #       "LTRC-CIT"   = "dotted",
-  #       "LBRC-CIT-C" = "longdash",
-  #       "LBRC-CIT-F" = "solid",
-  # 
-  #       "LTRC-CIF"   = "dotted",
-  #       "LBRC-CIF-C" = "longdash",
-  #       "LBRC-CIF-F" = "solid",
-  # 
-  #       "LTRC-COX"   = "dotted",
-  #       "LBRC-COX"   = "solid"
-  #     )
-  #   ) +
-  # 
-  #   labs(
-  #     x = "Time",
-  #     y = "Brier score",
-  #     color = "Method",
-  #     linetype = "Method"
-  #   ) +
-  # 
-  #   theme_bw() +
-  # 
-  #   theme(
-  #     legend.position = "right",
-  #     panel.grid.minor = element_blank()
-  #   )
-  # 
-  # write.csv(ibs_summary, file.path(out_dir, "synth_data_cv_ibs_summary.csv"), row.names = FALSE)
-  # 
-  # ggsave(
-  #   filename = file.path(out_dir, "figure_8_synth_data_Brier_scores.pdf"),
-  #   plot = p,
-  #   width = 8,
-  #   height = 5
-  # )
-  # 
-  # return(list(
-  #   ibs_summary = ibs_summary,
-  #   plot = p
-  # ))
 }
 
 # Fit a specified survival method and generate predictions
@@ -526,7 +424,7 @@ fit_predict_one_method <- function(method,
     sf <- survival::survfit(obj, newdata = TEST)
     sf_list <- lapply(seq_len(nrow(TEST)), function(i) sf[i])
 
-    pred <- predict_onesample_cox(
+    pred <- predict_cox(
       pred = sf_list,
       data = TEST[, c("A", "Y", "event", "id")],
       time.eval = time.uniq,
@@ -546,7 +444,7 @@ fit_predict_one_method <- function(method,
     obj <- survival::coxph(formula = formula, data = CPDATA, model=T, x=T, y=T)
     sf <- survival::survfit(obj, newdata = TEST)
     sf_list <- lapply(seq_len(nrow(TEST)), function(i) sf[i])
-    pred <- predict_onesample_cox(
+    pred <- predict_cox(
       pred = sf_list,
       data = TEST[, c("A", "Y", "event", "id")],
       time.eval = time.uniq,
@@ -568,7 +466,7 @@ fit_predict_one_method <- function(method,
 # Convert survfit() predictions from a Cox model into the
 # prediction object format required for Brier score and IBS
 # evaluation.
-predict_onesample_cox <- function(pred, data, time.eval, time.tau = NULL) {
+predict_cox <- function(pred, data, time.eval, time.tau = NULL) {
 
   n <- nrow(data)
   if (is.null(time.tau)){
@@ -637,9 +535,13 @@ real_data_application <- function(mode        = "cross_validation",
   # Set directory to store files
   if (mode == "cross_validation") out_dir <- paste0(working_dir, "/results_intermediate")
   else out_dir <- working_dir
-    
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   setwd(out_dir)
+  
+  synth_data_location <- paste0(out_dir, "/synth_data_application")
+  if (!dir.exists(synth_data_location)) {
+    dir.create(synth_data_location, recursive = TRUE)
+  }
   
   # Generate an example LBRC dataset for demonstration
   synth_data_path <- file.path(paste0(out_dir,"/synth_data_application"), "synthetic_data.csv")
@@ -647,7 +549,7 @@ real_data_application <- function(mode        = "cross_validation",
     DATA <- read.csv(synth_data_path)
   } else {
     DATA <- LBRC.generate_PH_nPH(n           = 400,
-                                 Dist        = "WD",
+                                 Dist        = "WI",
                                  cens_rate   = 20,
                                  ksi         = 500,
                                  cov_set_num = 10,

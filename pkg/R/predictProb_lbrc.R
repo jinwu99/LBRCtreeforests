@@ -166,7 +166,7 @@ predictProb_LBRC.lbrccif <- function(object, newdata = NULL, newdata.id, OOB = F
 batched_predictProb_LBRC <- function(object,
                                      newdata,
                                      time.eval,
-                                     time.tau,
+                                     time.tau = NULL,
                                      pred_surv_est,
                                      pred_surv_args = list(),
                                      batch_size = 50) {
