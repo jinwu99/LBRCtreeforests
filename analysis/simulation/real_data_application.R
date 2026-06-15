@@ -169,7 +169,8 @@ cross_validation_prediction <- function(DATA,
     TEST  <- rsample::assessment(split)
 
     TEST$id <- seq_len(nrow(TEST))
-    time.uniq <- sort(unique(c(0, plot_grid)))
+    # time.uniq <- sort(unique(c(0, plot_grid)))
+    time.uniq <- sort(unique(c(0, TEST$Y[TEST$Y <= time.tau])))
 
     control <- partykit::ctree_control(
       teststat  = "quad",
@@ -529,7 +530,7 @@ real_data_application <- function(mode        = "cross_validation",
                                   v           = 10, # v-fold parition
                                   repeats     = 1)  # number of times to repeat the v-fold partition
 { 
-  rand <- 100 # fix!
+  rand <- 100
   set.seed(rand)
   
   # Set directory to store files
@@ -550,10 +551,10 @@ real_data_application <- function(mode        = "cross_validation",
   } else {
     DATA <- LBRC.generate_PH_nPH(n           = 400,
                                  Dist        = "WI",
-                                 cens_rate   = 20,
+                                 cens_rate   = 50,
                                  ksi         = 500,
-                                 cov_set_num = 10,
-                                 model       = "interaction")$Data
+                                 cov_set_num = 12,
+                                 model       = "nonlinear")$Data
     write.csv(DATA, synth_data_path, row.names = FALSE)
   }
   

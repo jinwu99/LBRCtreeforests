@@ -50,7 +50,7 @@ source("./simulation/real_data_application.R")
 # ==============================================================================
 # Original manuscript values: M_pred = 500, M_test = 10000.
 # Change these values to run a smaller subset for quick verification.
-M_pred <- 10   # Number of simulations for prediction & tuning studies
+M_pred <- 20   # Number of simulations for prediction & tuning studies
 M_test <- 1000 # Number of simulations for unbiasedness tests
 
 
