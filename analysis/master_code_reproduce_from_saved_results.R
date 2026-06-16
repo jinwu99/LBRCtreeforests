@@ -15,6 +15,51 @@ rm(list=ls())
 ##      master_code_recompute_all_simulations.R
 ############################################################
 
+
+# ==============================================================================
+# Package Check & Installation
+# ==============================================================================
+# This script automatically checks whether all required packages
+# are installed and installs any missing packages from CRAN.
+install_if_missing <- function(packages) {
+  installed <- rownames(installed.packages())
+  to_install <- setdiff(packages, installed)
+  
+  if (length(to_install) > 0) {
+    message("Installing missing packages: ",
+            paste(to_install, collapse = ", "))
+    install.packages(to_install, dependencies = TRUE)
+  } else {
+    message("All required packages are already installed.")
+  }
+}
+
+required_packages <- c(
+  "survival",
+  "partykit",
+  "ipred",
+  "prodlim",
+  "Rcpp",
+  "rsample",
+  "dplyr",
+  "purrr",
+  "tidyr",
+  "ggplot2",
+  "ggforce",
+  "ggpubr",
+  "simplecolors",
+  "stringr",
+  "emmeans",
+  "patchwork",
+  "broom",
+  "scales",
+  "magick",
+  "pdftools"
+)
+
+install_if_missing(required_packages)
+
+
 ## Utility: set working directory to the location of this script ----
 get_current_dir <- function() {
   # Case 1: running in RStudio

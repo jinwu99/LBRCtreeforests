@@ -57,21 +57,25 @@ other attached packages:
  [1] pdftools_3.5.0     magick_2.8.5       purrr_1.0.2        scales_1.4.0       broom_1.0.5       
  [6] patchwork_1.3.0    emmeans_1.11.1     stringr_1.5.1      simplecolors_0.1.2 ggpubr_0.6.0      
 [11] ggforce_0.4.2      ggplot2_4.0.3      dplyr_1.1.4        tidyr_1.3.1        Rcpp_1.0.12       
-[16] rsample_1.3.0      survival_3.5-8     partykit_1.2-22    mvtnorm_1.2-4      libcoin_1.0-10    
+[16] survival_3.5-8     partykit_1.2-22    mvtnorm_1.2-4      libcoin_1.0-10     rsample_1.3.0     
 
 loaded via a namespace (and not attached):
- [1] gtable_0.3.6       rstatix_0.7.2      lattice_0.22-6     vctrs_0.6.5        tools_4.4.0       
- [6] generics_0.1.3     sandwich_3.1-0     parallel_4.4.0     tibble_3.2.1       fansi_1.0.6       
-[11] pkgconfig_2.0.3    Matrix_1.7-0       RColorBrewer_1.1-3 S7_0.2.2           lifecycle_1.0.4   
-[16] compiler_4.4.0     farver_2.1.1       codetools_0.2-20   carData_3.0-5      Formula_1.2-5     
-[21] pillar_1.9.0       furrr_0.3.1        car_3.1-2          MASS_7.3-60.2      multcomp_1.4-26   
-[26] rpart_4.1.23       abind_1.4-5        parallelly_1.38.0  tidyselect_1.2.1   digest_0.6.35     
-[31] inum_1.0-5         stringi_1.8.4      future_1.34.0      listenv_0.9.1      forcats_1.0.0     
-[36] splines_4.4.0      polyclip_1.10-7    colorspace_2.1-0   cli_3.6.2          magrittr_2.0.3    
-[41] utf8_1.2.4         TH.data_1.1-2      withr_3.0.0        backports_1.4.1    estimability_1.5.1
-[46] globals_0.16.3     qpdf_1.3.4         ggsignif_0.6.4     askpass_1.2.0      zoo_1.8-12        
-[51] coda_0.19-4.1      rlang_1.1.3        xtable_1.8-4       glue_1.7.0         tweenr_2.0.3      
-[56] rstudioapi_0.16.0  R6_2.5.1
+ [1] gtable_0.3.6        rstatix_0.7.2       lattice_0.22-6      vctrs_0.6.5        
+ [5] tools_4.4.0         generics_0.1.3      sandwich_3.1-0      parallel_4.4.0     
+ [9] tibble_3.2.1        fansi_1.0.6         pkgconfig_2.0.3     Matrix_1.7-0       
+[13] data.table_1.15.4   RColorBrewer_1.1-3  S7_0.2.2            lifecycle_1.0.4    
+[17] compiler_4.4.0      farver_2.1.1        codetools_0.2-20    carData_3.0-5      
+[21] class_7.3-22        prodlim_2025.04.28  Formula_1.2-5       pillar_1.9.0       
+[25] furrr_0.3.1         car_3.1-2           MASS_7.3-60.2       multcomp_1.4-26    
+[29] rpart_4.1.23        abind_1.4-5         lava_1.8.2          parallelly_1.38.0  
+[33] tidyselect_1.2.1    digest_0.6.35       inum_1.0-5          stringi_1.8.4      
+[37] future_1.34.0       listenv_0.9.1       forcats_1.0.0       splines_4.4.0      
+[41] polyclip_1.10-7     colorspace_2.1-0    cli_3.6.2           magrittr_2.0.3     
+[45] utf8_1.2.4          future.apply_1.11.2 TH.data_1.1-2       withr_3.0.0        
+[49] backports_1.4.1     estimability_1.5.1  globals_0.16.3      nnet_7.3-19        
+[53] qpdf_1.3.4          ggsignif_0.6.4      askpass_1.2.0       zoo_1.8-12         
+[57] coda_0.19-4.1       rlang_1.1.3         xtable_1.8-4        glue_1.7.0         
+[61] tweenr_2.0.3        ipred_0.9-15        rstudioapi_0.16.0   R6_2.5.1
 ```
 
 ## References

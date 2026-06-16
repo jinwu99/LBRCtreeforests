@@ -68,11 +68,17 @@ The code blocks outlined in the sections below are provided to give a transparen
 
 #### 1. Setup & User Settings (⚠️ MUST RUN FIRST)
 
-Before running any specific section, you must run this setup block to initialize the environment, load required functions, and set the simulation size. 
+Before running any specific section, you must run this setup block to initialize the environment, automatically check/install required packages, load required functions, and set the simulation size.
 
 > **Tip for Fast Reproducibility:** By default, `M_pred` and `M_test` are set to large numbers (500 and 10000), which may take several days. The code below temporarily reduces these parameters for a quick verification.
 
 ```R
+# NOTE:
+# The master script automatically checks for all required CRAN packages
+# and installs any missing dependencies before execution.
+# The package-checking code is omitted here for brevity.
+# No manual package installation is necessary.
+
 # 0. Setup Directory and Functions
 get_current_dir <- function() {
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) return(dirname(rstudioapi::getActiveDocumentContext()$path))

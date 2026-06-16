@@ -15,6 +15,51 @@ rm(list=ls())
 ## - You can run each section individually to instantly view its corresponding figure.
 ################################################################################
 
+
+# ==============================================================================
+# Package Check & Installation
+# ==============================================================================
+# This script automatically checks whether all required packages
+# are installed and installs any missing packages from CRAN.
+install_if_missing <- function(packages) {
+  installed <- rownames(installed.packages())
+  to_install <- setdiff(packages, installed)
+  
+  if (length(to_install) > 0) {
+    message("Installing missing packages: ",
+            paste(to_install, collapse = ", "))
+    install.packages(to_install, dependencies = TRUE)
+  } else {
+    message("All required packages are already installed.")
+  }
+}
+
+required_packages <- c(
+  "survival",
+  "partykit",
+  "ipred",
+  "prodlim",
+  "Rcpp",
+  "rsample",
+  "dplyr",
+  "purrr",
+  "tidyr",
+  "ggplot2",
+  "ggforce",
+  "ggpubr",
+  "simplecolors",
+  "stringr",
+  "emmeans",
+  "patchwork",
+  "broom",
+  "scales",
+  "magick",
+  "pdftools"
+)
+
+install_if_missing(required_packages)
+
+
 # ==============================================================================
 # 0. Setup & Utility
 # ==============================================================================
@@ -50,8 +95,8 @@ source("./simulation/real_data_application.R")
 # ==============================================================================
 # Original manuscript values: M_pred = 500, M_test = 10000.
 # Change these values to run a smaller subset for quick verification.
-M_pred <- 20   # Number of simulations for prediction & tuning studies
-M_test <- 1000 # Number of simulations for unbiasedness tests
+M_pred <- 1   # Number of simulations for prediction & tuning studies
+M_test <- 10 # Number of simulations for unbiasedness tests
 
 
 # ==============================================================================
