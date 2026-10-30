@@ -10,10 +10,7 @@ Many statistical methods of LTRC data can be seen as utilizing only the conditio
 
 ## Repository Structure & Navigation
 
-This repository is organized into two main directories tailored to your specific goals:
-
 * 📁 **[`pkg/`](./pkg)** **(For End-Users):** Contains the R implementation of the proposed LBRC-CIT and LBRC-CIF methods. **Navigate to this folder if you want to apply our algorithms to your own dataset.** It includes user-friendly functions for model fitting, hyperparameter tuning, and survival prediction.
-* 📁 **[`analysis/`](./analysis)** **(For Reviewers & Reproducibility):** Contains all the code required to reproduce the simulation studies, real-data application, figures, and tables presented in our manuscript and supplementary material. **Navigate to this folder if you want to verify or reproduce our published results.**
 
 ## Our proposal
 We extend the existing LTRC conditional inference tree and forest methods (LTRC-CIT/CIF [1,2]) to exploit LBRC-specific structures. This enhancement improves efficiency in both **tree construction** and **survival prediction**.
